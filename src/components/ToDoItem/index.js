@@ -1,39 +1,113 @@
-import React from "react";
+import React, {useRef, useEffect, useState} from "react";
 
 // Components
-import {FormControlLabel, Checkbox, Grid} from "@material-ui/core";
+import {Checkbox, Grid, IconButton, InputBase} from "@material-ui/core";
+
+import Draggable from "react-draggable";
 
 // HOC
 import withLogger from "../../hoc/withLogger";
 
 // Style
 import {makeStyles} from "@material-ui/styles";
+import MoreVertIcon from "@material-ui/icons/MoreVert";
 
 const useStyles = makeStyles({
   rootControlLabel: props => ({
     width: "100%",
-    textDecoration: props.isToDoItemDone ? "line-through" : "none"
+    textDecoration: props.isToDoItemDone ? "line-through" : "none",
+    marginLeft: "0"
   }),
   overall: {
-    padding: "7px 15px"
+    padding: "0",
+    display: "flex",
+    backgroundColor: "#ffffff"
+  },
+  label: {
+    opacity: 0.8
+  },
+  input: {
+    flex: "1"
+  },
+  fixed: {
+    height: "fit-content"
   }
 });
 
 // TODO: make it editable; activate fadeIn hoc also
-function ToDoItem({content, isDone, touched}) {
+const ToDoItem = ({
+  content,
+  isDone,
+  touched,
+  buttonMoreClicked,
+  contentChange,
+  readOnly,
+  autofocus,
+  id
+}) => {
   const classes = useStyles({isToDoItemDone: isDone});
+  const [newRef] = useState({[id]: useRef()});
+  const changeTask = e => {
+    if (e.key === "Enter" && e.currentTarget.value.trim().length > 0) {
+      e.preventDefault();
+      contentChange(e.currentTarget.value);
+    }
+  };
+
+  useEffect(() => {
+    if (autofocus && newRef[id].current) {
+      newRef[id].current.focus();
+    }
+  });
+
+  const [activeDrags, setActiveDrags] = useState(0);
+  // const [setDeltaPosition] = useState({
+  //   x: 0,
+  //   y: 0
+  // });
+
+  // const [controlledPosition, setControlledPosition] = useState({
+  //   x: -400,
+  //   y: 200
+  // });
+
+  const onStart = () => {
+    setActiveDrags(prev => ++prev);
+  };
+
+  const onStop = () => {
+    setActiveDrags(prev => --prev);
+  };
+
+  const dragHandlers = {onStart: onStart, onStop: onStop};
+
   return (
-    <Grid item className={classes.overall}>
-      <FormControlLabel
-        value="end"
-        control={<Checkbox checked={isDone} />}
-        label={content}
-        labelPlacement="end"
-        onChange={touched}
-        className={classes.rootControlLabel}
-      />
-    </Grid>
+    <Draggable {...dragHandlers}>
+      <Grid item className={classes.overall}>
+        <Checkbox
+          checked={isDone}
+          onChange={touched}
+          className={classes.fixed}
+        />
+
+        <InputBase
+          className={classes.input}
+          inputProps={{"aria-label": "naked"}}
+          multiline
+          value={content}
+          onKeyDown={changeTask}
+          inputRef={newRef[id]}
+          autoFocus={autofocus}
+        />
+        <IconButton
+          classes={{label: classes.label, root: classes.fixed}}
+          onClick={buttonMoreClicked}
+        >
+          <MoreVertIcon />
+        </IconButton>
+      </Grid>
+    </Draggable>
   );
-}
+};
 
 export default withLogger(ToDoItem);

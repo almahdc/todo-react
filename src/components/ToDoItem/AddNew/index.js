@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useRef, useEffect} from "react";
 
 // Style
 import {Grid, TextField} from "@material-ui/core";
@@ -14,15 +14,23 @@ const useStyles = makeStyles(() => ({
   }
 }));
 
-export default function AddNew({handleEnter}) {
+const AddNew = props => {
   const classes = useStyles();
+
+  const addNewRef = useRef(null);
 
   const addTask = e => {
     if (e.key === "Enter") {
       e.preventDefault();
-      handleEnter(e);
+      props.handleEnter(e);
     }
   };
+
+  useEffect(() => {
+    if (addNewRef.current) {
+      addNewRef.current.focus();
+    }
+  });
 
   return (
     <Grid
@@ -40,8 +48,11 @@ export default function AddNew({handleEnter}) {
           color="secondary"
           fullWidth
           onKeyDown={addTask}
+          inputRef={addNewRef}
         />
       </Grid>
     </Grid>
   );
-}
+};
+
+export default AddNew;

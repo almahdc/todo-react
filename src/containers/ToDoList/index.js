@@ -15,7 +15,9 @@ import {
   LinearProgress,
   FormControlLabel,
   Switch,
-  Button
+  Button,
+  Menu,
+  MenuItem
 } from "@material-ui/core";
 import {lighten, makeStyles, withStyles} from "@material-ui/core/styles";
 
@@ -64,17 +66,50 @@ export default function TodoList() {
     setDataSet(dataSetNew);
   };
 
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [currentIndex, setCurrentIndex] = useState(null);
+
+  const showOptions = (event, index) => {
+    setAnchorEl(event.currentTarget);
+    setCurrentIndex(index);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const removeCurrentItem = () => {
+    const dataSetNew = [...dataSet];
+    console.log(currentIndex);
+    dataSetNew.splice(currentIndex, 1);
+    setDataSet(dataSetNew);
+
+    handleClose();
+  };
+
+  const editCurrentItem = () => {
+    const dataSetNew = [...dataSet];
+    const dataSetNewItem = {...dataSetNew[currentIndex]};
+    const dataSetNewContent = {...dataSetNewItem.content};
+    dataSetNewContent.autoFocus = true;
+    dataSetNewItem.content = dataSetNewContent;
+    dataSetNew[currentIndex] = dataSetNewItem;
+
+    setDataSet(dataSetNew);
+    handleClose();
+  };
+
   const [checked, setChecked] = React.useState(false);
 
   const handleEnter = e => {
-    console.log("nddjdjd");
     e.preventDefault();
     setDataSet([
       ...dataSet,
       {
         content: {
           text: e.target.value,
-          isDone: false
+          isDone: false,
+          autoFocus: false
         }
       }
     ]);
@@ -94,6 +129,18 @@ export default function TodoList() {
       }
     });
     return (counter * 100) / dataSet.length;
+  };
+
+  const taskChanged = (value, i) => {
+    const dataSetNew = [...dataSet];
+    const dataSetNewItem = {...dataSetNew[i]};
+    const dataSetNewContent = {...dataSetNewItem.content};
+    dataSetNewContent.text = value;
+
+    dataSetNewItem.content = dataSetNewContent;
+    dataSetNew[i] = dataSetNewItem;
+
+    setDataSet(dataSetNew);
   };
 
   return (
@@ -133,12 +180,26 @@ export default function TodoList() {
             )
             .map((task, i) => (
               <ToDoItem
-                key={i}
+                id={i}
                 content={task.content.text}
                 isDone={task.content.isDone}
                 touched={() => taskTouched(i)}
+                buttonMoreClicked={e => showOptions(e, i)}
+                contentChange={value => taskChanged(value, i)}
+                autofocus={task.content.autoFocus}
               />
             ))}
+
+          <Menu
+            id="simple-menu"
+            anchorEl={anchorEl}
+            keepMounted
+            open={Boolean(anchorEl)}
+            onClose={handleClose}
+          >
+            <MenuItem onClick={removeCurrentItem}>Remove item</MenuItem>
+            <MenuItem onClick={editCurrentItem}>Edit item</MenuItem>
+          </Menu>
           <AddNew handleEnter={handleEnter} />
         </Grid>
       </Paper>
