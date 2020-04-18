@@ -20,8 +20,7 @@ const useStyles = makeStyles({
   }),
   overall: {
     padding: "0",
-    display: "flex",
-    backgroundColor: "#ffffff"
+    display: "flex"
   },
   label: {
     opacity: 0.8
