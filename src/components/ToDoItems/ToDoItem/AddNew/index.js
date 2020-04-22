@@ -1,4 +1,4 @@
-import React, {useRef, useEffect} from "react";
+import React, {forwardRef} from "react";
 
 // Style
 import {Grid, TextField} from "@material-ui/core";
@@ -14,23 +14,16 @@ const useStyles = makeStyles(() => ({
   }
 }));
 
-const AddNew = props => {
+const AddNew = (props, ref) => {
   const classes = useStyles();
 
-  const addNewRef = useRef(null);
-
   const addTask = e => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && e.target.value.trim() !== "") {
       e.preventDefault();
-      props.handleEnter(e);
+      props.handleNewItem(e.target.value.trim());
+      e.target.value = "";
     }
   };
-
-  useEffect(() => {
-    if (addNewRef.current) {
-      addNewRef.current.focus();
-    }
-  });
 
   return (
     <Grid
@@ -48,11 +41,11 @@ const AddNew = props => {
           color="secondary"
           fullWidth
           onKeyDown={addTask}
-          inputRef={addNewRef}
+          inputRef={ref}
         />
       </Grid>
     </Grid>
   );
 };
 
-export default AddNew;
+export default forwardRef(AddNew);

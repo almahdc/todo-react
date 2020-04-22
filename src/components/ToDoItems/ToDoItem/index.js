@@ -6,7 +6,7 @@ import {Checkbox, Grid, IconButton, InputBase} from "@material-ui/core";
 import Draggable from "react-draggable";
 
 // HOC
-import withLogger from "../../hoc/withLogger";
+import withLogger from "../../../hoc/withLogger";
 
 // Style
 import {makeStyles} from "@material-ui/styles";

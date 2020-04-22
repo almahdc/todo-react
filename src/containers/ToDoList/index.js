@@ -1,9 +1,9 @@
-import React, {useState} from "react";
+import React, {useState, useRef} from "react";
 
 // Components
-import ToDoItem from "../../components/ToDoItem";
+import ToDoItems from "../../components/ToDoItems";
 import TitleEditable from "../../components/TitleEditable";
-import AddNew from "../../components/ToDoItem/AddNew";
+import AddNew from "../../components/ToDoItems/ToDoItem/AddNew";
 
 // HOC or kind of
 import ContainerForTheList from "../../hoc/ContainerForToDoList";
@@ -15,9 +15,7 @@ import {
   LinearProgress,
   FormControlLabel,
   Switch,
-  Button,
-  Menu,
-  MenuItem
+  Button
 } from "@material-ui/core";
 import {lighten, makeStyles, withStyles} from "@material-ui/core/styles";
 
@@ -53,68 +51,47 @@ export default function TodoList() {
   const [dataSet, setDataSet] = useState([]);
   const [todoTitle, setToDoTitle] = useState("");
 
-  const taskTouched = key => {
+  const toggleToDoItemState = key => {
     //TODO: check this
     const dataSetNew = [...dataSet];
-    const dataSetNewItem = {...dataSetNew[key]};
+    const index = dataSetNew.findIndex(element => element.content.key === key);
+    const dataSetNewItem = {...dataSetNew[index]};
     const dataSetNewContent = {...dataSetNewItem.content};
     dataSetNewContent.isDone = !dataSetNewContent.isDone;
-
     dataSetNewItem.content = dataSetNewContent;
-    dataSetNew[key] = dataSetNewItem;
-
+    dataSetNew[index] = dataSetNewItem;
     setDataSet(dataSetNew);
   };
 
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [currentIndex, setCurrentIndex] = useState(null);
-
-  const showOptions = (event, index) => {
-    setAnchorEl(event.currentTarget);
-    setCurrentIndex(index);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const removeCurrentItem = () => {
+  const editCurrentItem = (value, key) => {
     const dataSetNew = [...dataSet];
-    console.log(currentIndex);
-    dataSetNew.splice(currentIndex, 1);
-    setDataSet(dataSetNew);
-
-    handleClose();
-  };
-
-  const editCurrentItem = () => {
-    const dataSetNew = [...dataSet];
-    const dataSetNewItem = {...dataSetNew[currentIndex]};
+    const index = dataSetNew.findIndex(element => element.content.key === key);
+    const dataSetNewItem = {...dataSet[index]};
     const dataSetNewContent = {...dataSetNewItem.content};
-    dataSetNewContent.autoFocus = true;
+    dataSetNewContent.text = value;
     dataSetNewItem.content = dataSetNewContent;
-    dataSetNew[currentIndex] = dataSetNewItem;
-
+    dataSetNew[index] = dataSetNewItem;
     setDataSet(dataSetNew);
-    handleClose();
+  };
+
+  const removeCurrentItem = key => {
+    setDataSet(dataSet.filter((element, index) => element.content.key !== key));
   };
 
   const [checked, setChecked] = React.useState(false);
 
-  const handleEnter = e => {
-    e.preventDefault();
+  const handleNewItem = trimmedValue => {
     setDataSet([
       ...dataSet,
       {
         content: {
-          text: e.target.value,
+          key: new Date().getTime(),
+          text: trimmedValue,
           isDone: false,
           autoFocus: false
         }
       }
     ]);
-    // IS THIS VALID????
-    e.target.value = "";
   };
 
   const setProgressValue = () => {
@@ -131,16 +108,18 @@ export default function TodoList() {
     return (counter * 100) / dataSet.length;
   };
 
-  const taskChanged = (value, i) => {
-    const dataSetNew = [...dataSet];
-    const dataSetNewItem = {...dataSetNew[i]};
-    const dataSetNewContent = {...dataSetNewItem.content};
-    dataSetNewContent.text = value;
+  const addNewRef = useRef(null);
 
-    dataSetNewItem.content = dataSetNewContent;
-    dataSetNew[i] = dataSetNewItem;
+  const fromToDoListTitleToAddNew = () => {
+    if (addNewRef.current) {
+      addNewRef.current.focus();
+    }
+  };
 
-    setDataSet(dataSetNew);
+  const filteredDataSetIfNeeded = function() {
+    return !checked
+      ? dataSet
+      : dataSet.filter((element, index) => !element.content.isDone);
   };
 
   return (
@@ -149,6 +128,7 @@ export default function TodoList() {
         title={todoTitle}
         placeholder="Add name to your list"
         editTitle={newTitle => setToDoTitle(newTitle)}
+        onKeyDownEnter={fromToDoListTitleToAddNew}
       />
       {!checked && (
         <BorderLinearProgress
@@ -174,33 +154,14 @@ export default function TodoList() {
             classes={{root: classes.root, label: classes.label}}
           />
           <Button onClick={() => setDataSet([])}>Reset list</Button>
-          {dataSet
-            .filter((element, i) =>
-              checked ? !element.content.isDone : element
-            )
-            .map((task, i) => (
-              <ToDoItem
-                id={i}
-                content={task.content.text}
-                isDone={task.content.isDone}
-                touched={() => taskTouched(i)}
-                buttonMoreClicked={e => showOptions(e, i)}
-                contentChange={value => taskChanged(value, i)}
-                autofocus={task.content.autoFocus}
-              />
-            ))}
-
-          <Menu
-            id="simple-menu"
-            anchorEl={anchorEl}
-            keepMounted
-            open={Boolean(anchorEl)}
-            onClose={handleClose}
-          >
-            <MenuItem onClick={removeCurrentItem}>Remove item</MenuItem>
-            <MenuItem onClick={editCurrentItem}>Edit item</MenuItem>
-          </Menu>
-          <AddNew handleEnter={handleEnter} />
+          <ToDoItems
+            dataSet={filteredDataSetIfNeeded()}
+            removeCurrentItem={removeCurrentItem}
+            editCurrentItem={editCurrentItem}
+            toggleItem={toggleToDoItemState}
+            showDoneItems={checked}
+          />
+          <AddNew handleNewItem={handleNewItem} ref={addNewRef} />
         </Grid>
       </Paper>
     </ContainerForTheList>

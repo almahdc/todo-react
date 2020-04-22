@@ -17,8 +17,15 @@ const useStyles = makeStyles(() => ({
   }
 }));
 
-function TitleEditable({placeholder, title, editTitle}) {
+function TitleEditable({placeholder, title, editTitle, onKeyDownEnter}) {
   const classes = useStyles();
+
+  const handleKeyDown = e => {
+    if (e.key === "Enter") {
+      onKeyDownEnter();
+    }
+  };
+
   return (
     <div className={classes.root}>
       <InputBase
@@ -28,6 +35,7 @@ function TitleEditable({placeholder, title, editTitle}) {
         autoFocus={true}
         type="text"
         placeholder={placeholder}
+        onKeyDown={handleKeyDown}
       />
     </div>
   );

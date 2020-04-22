@@ -1,4 +1,4 @@
-import React, {Component} from "react";
+import React, {useState, useEffect} from "react";
 
 // Style
 import themeLight from "./style/materialUiCustomization";
@@ -14,45 +14,43 @@ import {DARK_THEME, LIGHT_THEME} from "./utility/constants";
 
 // TODO: restructure this code
 
-class App extends Component {
-  state = {
-    themeType: this.setInitialTheme()
-  };
+function App() {
+  const [themeType, setThemeType] = useState(null);
 
-  setInitialTheme() {
+  const setInitialTheme = () => {
     return localStorage.getItem("themeType")
       ? localStorage.getItem("themeType")
       : window.matchMedia &&
         window.matchMedia("(prefers-color-scheme: dark)").matches
       ? DARK_THEME
       : LIGHT_THEME;
-  }
-
-  onClickHandler = () => {
-    localStorage.setItem("themeType", this.changeTheme(this.state.themeType));
-    this.setState(() => ({
-      themeType: this.changeTheme(this.state.themeType)
-    }));
   };
 
-  changeTheme(currentTheme) {
-    return currentTheme === DARK_THEME ? LIGHT_THEME : DARK_THEME;
-  }
+  useEffect(() => {
+    setThemeType(setInitialTheme());
+  }, []);
 
-  render() {
-    return (
-      <ThemeProvider theme={themeLight(this.state.themeType)}>
-        <CssBaseline />
-        <Layout
-          appTitle="Divide IT into todo chunks"
-          themeType={this.state.themeType}
-          onClickHandler={this.onClickHandler}
-        >
-          <ToDoList />
-        </Layout>
-      </ThemeProvider>
-    );
-  }
+  const onClickHandler = () => {
+    localStorage.setItem("themeType", changeTheme(themeType));
+    setThemeType(localStorage.getItem("themeType"));
+  };
+
+  const changeTheme = currentTheme => {
+    return currentTheme === DARK_THEME ? LIGHT_THEME : DARK_THEME;
+  };
+
+  return (
+    <ThemeProvider theme={themeLight(themeType)}>
+      <CssBaseline />
+      <Layout
+        appTitle="Divide IT into todo chunks"
+        themeType={themeType}
+        onClickHandler={onClickHandler}
+      >
+        <ToDoList />
+      </Layout>
+    </ThemeProvider>
+  );
 }
 
 export default App;
