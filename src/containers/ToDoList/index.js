@@ -154,13 +154,15 @@ export default function TodoList() {
             classes={{root: classes.root, label: classes.label}}
           />
           <Button onClick={() => setDataSet([])}>Reset list</Button>
-          <ToDoItems
-            dataSet={filteredDataSetIfNeeded()}
-            removeCurrentItem={removeCurrentItem}
-            editCurrentItem={editCurrentItem}
-            toggleItem={toggleToDoItemState}
-            showDoneItems={checked}
-          />
+          {dataSet.length > 0 && (
+            <ToDoItems
+              dataSet={filteredDataSetIfNeeded()}
+              removeCurrentItem={removeCurrentItem}
+              editCurrentItem={editCurrentItem}
+              toggleItem={toggleToDoItemState}
+              showDoneItems={checked}
+            />
+          )}
           <AddNew handleNewItem={handleNewItem} ref={addNewRef} />
         </Grid>
       </Paper>

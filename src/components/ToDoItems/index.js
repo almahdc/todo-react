@@ -34,18 +34,19 @@ const ToDoItems = ({
 
   return (
     <>
-      {dataSet.map((task, index) => (
-        <ToDoItem
-          id={index}
-          content={task.content.text}
-          isDone={task.content.isDone}
-          touched={() => toggleItem(task.content.key)}
-          buttonMoreClicked={e => showOptions(e, index)}
-          contentChange={value => editCurrentItem(value, task.content.key)}
-          autofocus={task.content.autoFocus}
-          key={index}
-        />
-      ))}
+      {dataSet &&
+        dataSet.map((task, index) => (
+          <ToDoItem
+            id={index}
+            content={task.content.text}
+            isDone={task.content.isDone}
+            touched={() => toggleItem(task.content.key)}
+            buttonMoreClicked={e => showOptions(e, index)}
+            contentChange={value => editCurrentItem(value, task.content.key)}
+            autofocus={task.content.autoFocus}
+            key={index}
+          />
+        ))}
       <Menu
         id="simple-menu"
         anchorEl={anchorEl}
