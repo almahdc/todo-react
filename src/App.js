@@ -12,6 +12,9 @@ import ToDoList from "./containers/ToDoList";
 // Utility
 import {DARK_THEME, LIGHT_THEME} from "./utility/constants";
 
+// Context
+import ToDoListContextProvider from "./context/todolist-context";
+
 // TODO: restructure this code
 
 function App() {
@@ -47,7 +50,9 @@ function App() {
         themeType={themeType}
         onClickHandler={onClickHandler}
       >
-        <ToDoList />
+        <ToDoListContextProvider>
+          <ToDoList />
+        </ToDoListContextProvider>
       </Layout>
     </ThemeProvider>
   );

@@ -1,16 +1,21 @@
-import React, {useRef, useEffect, useState} from "react";
+import React, {useState, useContext} from "react";
 
 // Components
-import {Checkbox, Grid, IconButton, InputBase} from "@material-ui/core";
+import {Checkbox, Grid, IconButton, FormControlLabel} from "@material-ui/core";
+import EditToDoItem from "./Edit";
 
-import Draggable from "react-draggable";
+// import Draggable from "react-draggable";
+
+// Context
+import {ToDoListContext} from "../../../context/todolist-context";
 
 // HOC
 import withLogger from "../../../hoc/withLogger";
 
 // Style
 import {makeStyles} from "@material-ui/styles";
-import MoreVertIcon from "@material-ui/icons/MoreVert";
+import DeleteIcon from "@material-ui/icons/Delete";
+import EditIcon from "@material-ui/icons/Edit";
 
 const useStyles = makeStyles({
   rootControlLabel: props => ({
@@ -22,44 +27,23 @@ const useStyles = makeStyles({
     padding: "0",
     display: "flex"
   },
-  label: {
-    opacity: 0.8
-  },
   input: {
-    flex: "1"
+    flex: "1",
+    margin: "0px"
   },
   fixed: {
     height: "fit-content"
+  },
+  textField: {
+    width: "100%",
+    padding: "0 10px"
   }
 });
 
-// TODO: make it editable; activate fadeIn hoc also
-const ToDoItem = ({
-  content,
-  isDone,
-  touched,
-  buttonMoreClicked,
-  contentChange,
-  readOnly,
-  autofocus,
-  id
-}) => {
+const ToDoItem = ({content, isDone, id}) => {
   const classes = useStyles({isToDoItemDone: isDone});
-  const [newRef] = useState({[id]: useRef()});
-  const changeTask = e => {
-    if (e.key === "Enter" && e.currentTarget.value.trim().length > 0) {
-      e.preventDefault();
-      contentChange(e.currentTarget.value);
-    }
-  };
-
-  useEffect(() => {
-    if (autofocus && newRef[id].current) {
-      newRef[id].current.focus();
-    }
-  });
-
-  const [activeDrags, setActiveDrags] = useState(0);
+  //
+  // const [activeDrags, setActiveDrags] = useState(0);
   // const [setDeltaPosition] = useState({
   //   x: 0,
   //   y: 0
@@ -70,42 +54,63 @@ const ToDoItem = ({
   //   y: 200
   // });
 
-  const onStart = () => {
-    setActiveDrags(prev => ++prev);
+  // const onStart = () => {
+  //   setActiveDrags(prev => ++prev);
+  // };
+  //
+  // const onStop = () => {
+  //   setActiveDrags(prev => --prev);
+  // };
+  //
+  // const dragHandlers = {onStart: onStart, onStop: onStop};
+
+  const toDoListContext = useContext(ToDoListContext);
+
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  const editModeContent = (
+    <EditToDoItem
+      value={content}
+      doneEditing={newValue => switchToNormalMode(newValue)}
+    />
+  );
+
+  const switchToNormalMode = newValue => {
+    setIsEditMode(false);
+    if (newValue.length > 0) {
+      toDoListContext.editItem(newValue, id);
+    }
   };
 
-  const onStop = () => {
-    setActiveDrags(prev => --prev);
-  };
-
-  const dragHandlers = {onStart: onStart, onStop: onStop};
+  const toDoItemMode = (
+    <>
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={isDone}
+            onChange={() => toDoListContext.toggleItem(id)}
+          />
+        }
+        multiline="true"
+        label={content}
+        classes={{label: classes.rootControlLabel, root: classes.input}}
+      />
+      <IconButton onClick={() => setIsEditMode(true)} className={classes.fixed}>
+        <EditIcon fontSize="small" />
+      </IconButton>
+      <IconButton
+        onClick={() => toDoListContext.removeItem(id)}
+        className={classes.fixed}
+      >
+        <DeleteIcon fontSize="small" />
+      </IconButton>
+    </>
+  );
 
   return (
-    <Draggable {...dragHandlers}>
-      <Grid item className={classes.overall}>
-        <Checkbox
-          checked={isDone}
-          onChange={touched}
-          className={classes.fixed}
-        />
-
-        <InputBase
-          className={classes.input}
-          inputProps={{"aria-label": "naked"}}
-          multiline
-          value={content}
-          onKeyDown={changeTask}
-          inputRef={newRef[id]}
-          autoFocus={autofocus}
-        />
-        <IconButton
-          classes={{label: classes.label, root: classes.fixed}}
-          onClick={buttonMoreClicked}
-        >
-          <MoreVertIcon />
-        </IconButton>
-      </Grid>
-    </Draggable>
+    <Grid item className={classes.overall}>
+      {isEditMode ? editModeContent : toDoItemMode}
+    </Grid>
   );
 };
 

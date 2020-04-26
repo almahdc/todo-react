@@ -1,9 +1,11 @@
-import React, {forwardRef} from "react";
+import React, {forwardRef, useContext} from "react";
 
 // Style
 import {Grid, TextField} from "@material-ui/core";
 import {makeStyles} from "@material-ui/core/styles";
 import AddIcon from "@material-ui/icons/Add";
+
+import {ToDoListContext} from "../../../../context/todolist-context";
 
 const useStyles = makeStyles(() => ({
   addNewTask: {
@@ -17,10 +19,12 @@ const useStyles = makeStyles(() => ({
 const AddNew = (props, ref) => {
   const classes = useStyles();
 
+  const toDoListContext = useContext(ToDoListContext);
+
   const addTask = e => {
     if (e.key === "Enter" && e.target.value.trim() !== "") {
       e.preventDefault();
-      props.handleNewItem(e.target.value.trim());
+      toDoListContext.addItem(e.target.value.trim());
       e.target.value = "";
     }
   };
